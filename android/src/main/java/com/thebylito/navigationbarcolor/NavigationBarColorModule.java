@@ -136,6 +136,36 @@ public class NavigationBarColorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void changeNavigationBarTheme(final Boolean light, final Promise promise) {
+        final WritableMap map = Arguments.createMap();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (getCurrentActivity() != null) {
+                try {
+                    final Window window = getCurrentActivity().getWindow();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setNavigationBarTheme(getCurrentActivity(), light);
+                            WritableMap map = Arguments.createMap();
+                            map.putBoolean("success", true);
+                            promise.resolve(map);
+                        }
+                    });
+                } catch (IllegalViewOperationException e) {
+                    map.putBoolean("success", false);
+                    promise.reject("error", e);
+                }
+
+            } else {
+                promise.reject(ERROR_NO_ACTIVITY, new Throwable(ERROR_NO_ACTIVITY_MESSAGE));
+
+            }
+        } else {
+            promise.reject(ERROR_API_LEVEL, new Throwable(ERROR_API_LEVEL_MESSAGE));
+        }
+    }
+
+    @ReactMethod
     public void hideNavigationBar(Promise promise) {
         try {
             runOnUiThread(new Runnable() {
